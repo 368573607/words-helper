@@ -25,9 +25,12 @@ Array.prototype.shuffle = function() {
     return input;
 }
 fs.readFile(process.argv[2], async(err,data)=>{
+    const falseList = new Set()
     data=data.toString()
     data=data.split('\n').map(x=>[x.split(isWordsList?' ':':')])
     const scrambledElements = data.shuffle()
+    
+    outside:
     for(const element of data){
 	const [chinese,english]=element[0]
 	if(english&&chinese){
@@ -35,14 +38,23 @@ fs.readFile(process.argv[2], async(err,data)=>{
 		const inputWord = await read(`${chinese}:`)
 		if(inputWord===english){
 		    console.log('      perfect!')
-		    break;
-		}else if(inputWord===`n`){
-		    console.log(`      正确答案：${english}`)
-		}else {
-		    console.log(`      你写错了！请重来: `)
+		    break
+		}else if(inputWord===`q`){
+		    break outside
+		}
+		else{
+		    if(inputWord===`n`){
+			console.log(`      正确答案：${english}`)
+		    }else {
+			console.log(`      你写错了！请重来: `)
+		    }
+		    falseList.add(`${chinese}: ${english}`)
 		}
 	    }
 	}
     }
-//    console.log(scrambledElements)
+    console.log("\n\n\n\n背错的单词：")
+    for(const element of Array.from(falseList)){
+	console.log(element)
+    }
 })
